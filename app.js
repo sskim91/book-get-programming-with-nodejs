@@ -5,13 +5,17 @@ const path = require('path');
 const session = require('express-session');
 const flash = require('connect-flash');
 const expressLayouts = require('express-ejs-layouts');
+const mongoConnect = require('./schemas');
+
 require('dotenv').config();
 
 const indexRouter = require('./routes/index');
 const courseRouter = require('./routes/courses');
 const contactRouter = require('./routes/contact');
+const subscriberRouter = require('./routes/subscriber');
 
 const app = express();
+mongoConnect();
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -38,6 +42,7 @@ app.use(flash());
 app.use('/', indexRouter);
 app.use('/courses', courseRouter);
 app.use('/contact', contactRouter);
+app.use('/subscriber', subscriberRouter);
 
 app.use((req, res, next) => {
 	const err = new Error('Not Found');
@@ -55,3 +60,5 @@ app.use((err, req, res, next) => {
 app.listen(process.env.PORT, () => {
 	console.log(app.get('port'));
 });
+
+module.exports = app;
