@@ -4,7 +4,7 @@ module.exports = () => {
 
 	const connect = () => {
 		mongoose.connect(
-			'mongodb://sskim:sskim91@localhost:27017/admin',
+			'mongodb://localhost:27017/admin',
 			{
 				dbName: 'recipe_db',
 				useNewUrlParser: true,

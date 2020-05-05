@@ -13,6 +13,7 @@ const indexRouter = require('./routes/index');
 const courseRouter = require('./routes/courses');
 const contactRouter = require('./routes/contact');
 const subscriberRouter = require('./routes/subscriber');
+const userRouter = require('./routes/users');
 
 const app = express();
 mongoConnect();
@@ -43,6 +44,7 @@ app.use('/', indexRouter);
 app.use('/courses', courseRouter);
 app.use('/contact', contactRouter);
 app.use('/subscriber', subscriberRouter);
+app.use('/users', userRouter);
 
 app.use((req, res, next) => {
 	const err = new Error('Not Found');
