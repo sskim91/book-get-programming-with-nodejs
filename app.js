@@ -1,66 +1,92 @@
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const morgan = require('morgan');
-const path = require('path');
-const session = require('express-session');
-const flash = require('connect-flash');
-const expressLayouts = require('express-ejs-layouts');
-const mongoConnect = require('./schemas');
+const express = require("express"),
+	layouts = require("express-ejs-layouts"),
+	app = express(),
+	router = express.Router(),
+	homeController = require("./controllers/homeController"),
+	errorController = require("./controllers/errorController"),
+	subscribersController = require("./controllers/subscribersController.js"),
+	usersController = require("./controllers/usersController.js"),
+	coursesController = require("./controllers/coursesController.js"),
+	mongoose = require("mongoose"),
+	methodOverride = require("method-override");
 
-require('dotenv').config();
+mongoose.connect(
+	"mongodb://localhost:27017/admin",
+	{
+		dbName: 'recipe_db',
+		useNewUrlParser: true
+	}, (error) => {
+		if (error) {
+			console.error('몽고디비 연결 에러', error);
+		} else {
+			console.log('몽고디비 연결 성공');
+		}
+	}
+);
+mongoose.set("useCreateIndex", true);
 
-const indexRouter = require('./routes/index');
-const courseRouter = require('./routes/courses');
-const contactRouter = require('./routes/contact');
-const subscriberRouter = require('./routes/subscriber');
-const userRouter = require('./routes/users');
+app.set("port", process.env.PORT || 3000);
+app.set("view engine", "ejs");
 
-const app = express();
-mongoConnect();
+router.use(
+	methodOverride("_method", {
+		methods: ["POST", "GET"]
+	})
+);
 
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-app.set('port', process.env.PORT || 3000);
-app.use(expressLayouts);
+router.use(layouts);
+router.use(express.static("public"));
 
-app.use(morgan('dev'));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
-app.use(express.urlencoded({extended: false}))
-app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use(session({
-	cookie: {
-		httpOnly: true,
-		secure: false,
-	},
-	resave: false,
-	saveUninitialized: false,
-	secret: process.env.COOKIE_SECRET
-}));
+router.use(
+	express.urlencoded({
+		extended: false
+	})
+);
+router.use(express.json());
 
-app.use(flash());
+router.get("/", homeController.index);
 
-app.use('/', indexRouter);
-app.use('/courses', courseRouter);
-app.use('/contact', contactRouter);
-app.use('/subscriber', subscriberRouter);
-app.use('/users', userRouter);
+router.get("/users", usersController.index, usersController.indexView);
+router.get("/users/new", usersController.new);
+router.post("/users/create", usersController.create, usersController.redirectView);
+router.get("/users/:id/edit", usersController.edit);
+router.put("/users/:id/update", usersController.update, usersController.redirectView);
+router.get("/users/:id", usersController.show, usersController.showView);
+router.delete("/users/:id/delete", usersController.delete, usersController.redirectView);
 
-app.use((req, res, next) => {
-	const err = new Error('Not Found');
-	err.status = 404;
-	next(err);
+router.get("/subscribers", subscribersController.index, subscribersController.indexView);
+router.get("/subscribers/new", subscribersController.new);
+router.post(
+	"/subscribers/create",
+	subscribersController.create,
+	subscribersController.redirectView
+);
+router.get("/subscribers/:id/edit", subscribersController.edit);
+router.put(
+	"/subscribers/:id/update",
+	subscribersController.update,
+	subscribersController.redirectView
+);
+router.get("/subscribers/:id", subscribersController.show, subscribersController.showView);
+router.delete(
+	"/subscribers/:id/delete",
+	subscribersController.delete,
+	subscribersController.redirectView
+);
+
+router.get("/courses", coursesController.index, coursesController.indexView);
+router.get("/courses/new", coursesController.new);
+router.post("/courses/create", coursesController.create, coursesController.redirectView);
+router.get("/courses/:id/edit", coursesController.edit);
+router.put("/courses/:id/update", coursesController.update, coursesController.redirectView);
+router.get("/courses/:id", coursesController.show, coursesController.showView);
+router.delete("/courses/:id/delete", coursesController.delete, coursesController.redirectView);
+
+router.use(errorController.pageNotFoundError);
+router.use(errorController.internalServerError);
+
+app.use("/", router);
+
+app.listen(app.get("port"), () => {
+	console.log(`Server running at http://localhost:${app.get("port")}`);
 });
-
-app.use((err, req, res, next) => {
-	res.locals.message = err.message;
-	res.locals.error = req.app.get('env') === 'development' ? err : {};
-	res.status(err.status || 500);
-	res.render('error');
-});
-
-app.listen(process.env.PORT, () => {
-	console.log(app.get('port'));
-});
-
-module.exports = app;
