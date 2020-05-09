@@ -1,11 +1,15 @@
 "use strict";
 
 const mongoose = require("mongoose"),
-	Subscriber = require("./schemas/subscriber");
+	Subscriber = require("./models/subscriber");
 
 mongoose.connect(
-	"mongodb://localhost:27017/recipe_db",
-	{useNewUrlParser: true}
+	"mongodb://localhost:27017/admin",
+	{
+        dbName: 'confetti_cuisine',
+		useUnifiedTopology: true,
+		useNewUrlParser: true
+	}
 );
 mongoose.connection;
 

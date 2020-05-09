@@ -1,9 +1,12 @@
 const mongoose = require("mongoose");
-const User = require("./schemas/user");
+const User = require("./models/user");
 
 mongoose.connect(
-	"mongodb://localhost:27017/recipe_db",
-	{useNewUrlParser: true}
+	"mongodb://localhost:27017/admin",
+	{
+		dbName: 'confetti_cuisine',
+		useNewUrlParser: true
+	}
 );
 
 User.remove({})
